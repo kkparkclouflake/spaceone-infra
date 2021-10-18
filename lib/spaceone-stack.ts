@@ -10,7 +10,7 @@ export class SpaceoneStack extends cdk.Stack {
     super(scope, id, props);
 
     // The code that defines your stack goes here
-    const newVpc = new ec2.Vpc(this, 'hello-eks-vpc', {
+    const newVpc = new ec2.Vpc(this, 'spaceone-prod-vpc', {
       cidr: '10.0.0.0/16',
       maxAzs: 3,
       subnetConfiguration: [
@@ -33,8 +33,8 @@ export class SpaceoneStack extends cdk.Stack {
     // });
 
     // provisiong a cluster
-    const cluster = new eks.Cluster(this, 'hello-eks', {
-      clusterName: 'hello-eks',
+    const cluster = new eks.Cluster(this, 'spaceone-prod-eks-cluster', {
+      clusterName: 'spaceone-prod-eks-cluster',
       version: eks.KubernetesVersion.V1_19,
       defaultCapacity: 0,
       // defaultCapacityInstance: ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MEDIUM),
