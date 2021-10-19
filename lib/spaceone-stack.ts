@@ -28,9 +28,10 @@ export class SpaceoneStack extends cdk.Stack {
     });
 
     // Master IAM Role
-    // const mastersRole = new iam.Role(this, 'mastersRole', {
-    //   assumedBy: new iam.AccountRootPrincipal()
-    // });
+    
+    const clusterAdmin = new iam.Role(this, 'AdminRole', {
+      assumedBy: new iam.AccountRootPrincipal()
+    });
 
     // provisiong a cluster
     const cluster = new eks.Cluster(this, 'spaceone-prod-eks-cluster', {
@@ -40,7 +41,7 @@ export class SpaceoneStack extends cdk.Stack {
       // defaultCapacityInstance: ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MEDIUM),
       vpc: newVpc,
       vpcSubnets: [{ subnetType: ec2.SubnetType.PRIVATE_WITH_NAT }],
-      // mastersRole: mastersRole
+      mastersRole: clusterAdmin
     });
 
     // Node Group 선언
@@ -62,22 +63,14 @@ export class SpaceoneStack extends cdk.Stack {
     // 클러스터의 aws-auth 설정
     // 현재 addMastersRole 이나 addRoleMapping 를 하면 addUserMapping 에 넣은 user 가 실제로는 들어가지 않는 문제가 있음
     // 별도로 설정이 필요한 상황은 아닌것으로 보여 일단 주석처리
-
     // const awsAuth = new eks.AwsAuth(this, 'clusterAuth', {
     //   cluster: cluster
     // });
 
-    // usersList.forEach(function(data, index) {
-    //   awsAuth.addUserMapping(iam.User.fromUserName($this, data, data), {
-    //     username: data,
-    //     groups: ["system:masters"],
-    //   });
-    // });
-
     // // Apply 된 Cluster 를 업데이트 하면 기본 생성되는 Master Role 이 사라지는데 무슨 문제일까?
     // awsAuth.addMastersRole(
-    //   iam.Role.fromRoleArn(this, 'mastersRoleAtAwsAuth', mastersRole.roleArn),
-    //   mastersRole.roleName
+    //   iam.Role.fromRoleArn(this, 'mastersRoleAtAwsAuth', clusterAdmin.roleArn),
+    //   clusterAdmin.roleName
     // );
 
     // // Cluster IAM Role
@@ -85,6 +78,13 @@ export class SpaceoneStack extends cdk.Stack {
     //   groups: ["system:bootstrappers", "system:nodes"],
     //   username: "system:node:{{EC2PrivateDNSName}}"
     // });
+
+    // for (let i = 0; usersList.length > i; i++) {
+    //   awsAuth.addUserMapping(iam.User.fromUserName(this, usersList[i], usersList[i]), {
+    //     username: usersList[i],
+    //     groups: ["system:masters"],
+    //   });
+    // }
 
     // apply a kubernetes manifest to the cluster
     // cluster.addManifest('mypod', {
