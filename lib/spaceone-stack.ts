@@ -6,10 +6,12 @@ import * as iam from '@aws-cdk/aws-iam'
 // let usersList = ['mzc_user04', 'mzc_user05'];
 
 export class SpaceoneStack extends cdk.Stack {
+  public readonly cluster: eks.Cluster;
+
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    // SpaceONE VPC
     const newVpc = new ec2.Vpc(this, 'spaceone-prod-vpc', {
       cidr: '10.0.0.0/16',
       maxAzs: 3,
@@ -28,24 +30,23 @@ export class SpaceoneStack extends cdk.Stack {
     });
 
     // Master IAM Role
-    
     const clusterAdmin = new iam.Role(this, 'AdminRole', {
       assumedBy: new iam.AccountRootPrincipal()
     });
 
-    // provisiong a cluster
+    // provision a cluster
     const cluster = new eks.Cluster(this, 'spaceone-prod-eks-cluster', {
       clusterName: 'spaceone-prod-eks-cluster',
       version: eks.KubernetesVersion.V1_19,
       defaultCapacity: 0,
-      // defaultCapacityInstance: ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MEDIUM),
       vpc: newVpc,
       vpcSubnets: [{ subnetType: ec2.SubnetType.PRIVATE_WITH_NAT }],
       mastersRole: clusterAdmin
     });
 
-    // Node Group 선언
+    // provision a Node Group
     cluster.addNodegroupCapacity('spaceone-prod-core-nodegroup', {
+      nodegroupName: 'spaceone-prod-core-nodegroup',
       desiredSize: 2,
       instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MEDIUM)],
       diskSize: 20,
@@ -53,6 +54,7 @@ export class SpaceoneStack extends cdk.Stack {
       tags: {"Environment": "prod", "Category": "core"},
     });
     cluster.addNodegroupCapacity('spaceone-prod-supervisor-nodegroup', {
+      nodegroupName: 'spaceone-prod-supervisor-nodegroup',
       desiredSize: 2,
       instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MEDIUM)],
       diskSize: 20,
@@ -85,21 +87,7 @@ export class SpaceoneStack extends cdk.Stack {
     //     groups: ["system:masters"],
     //   });
     // }
-
-    // apply a kubernetes manifest to the cluster
-    // cluster.addManifest('mypod', {
-    //   apiVersion: 'v1',
-    //   kind: 'Pod',
-    //   metadata: { name: 'mypod' },
-    //   spec: {
-    //     containers: [
-    //       {
-    //         name: 'hello',
-    //         image: 'paulbouwer/hello-kubernetes:1.5',
-    //         ports: [ { containerPort: 8080 } ]
-    //       }
-    //     ]
-    //   }
-    // });
+    
+    this.cluster = cluster;
   }
 }
