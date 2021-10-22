@@ -4,5 +4,9 @@
     "us-west-2b",
     "us-west-2c",
     "us-west-2d"
-  ]
+  ],
+  "hosted-zone:account=139629787974:domainName=aws.sonnada.me:region=us-west-2": {
+    "Id": "/hostedzone/Z03010613J14SY0TVMW4H",
+    "Name": "aws.sonnada.me."
+  }
 }
