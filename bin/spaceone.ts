@@ -9,6 +9,9 @@ import { LookupZone } from '../lib/constructs/lookup-zone';
 import { CreateCertificate } from '../lib/constructs/create-certificate';
 import { ExternalDnsDeploy } from '../lib/constructs/external-dns-deploy';
 import { DocumentDBCluster } from '../lib/constructs/documentdb-cluster';
+import { CreateAwsUser } from '../lib/constructs/create-aws-user';
+
+import { EksProps } from '../lib/props/eks-props'
 
 // const config = {
 //   env: {
@@ -28,24 +31,24 @@ const spaceoneStack = new SpaceoneStack(app, 'SpaceoneStack', {
   env: primaryRegion
 });
 
-// 각종 드라이버 설치
-new AwsEbsCsiDriverDeploy(spaceoneStack, 'AwsEbsCsiDriverDeploy', {
-  env: primaryRegion,cluster: spaceoneStack.cluster
-});
+let eksProp: EksProps = {
+  env: primaryRegion, cluster: spaceoneStack.cluster
+};
 
-new AwsLoadBalancerControllerDeploy(spaceoneStack, 'AwsLoadBalancerControllerDeploy', {
-  env: primaryRegion,cluster: spaceoneStack.cluster
-});
+// 각종 드라이버 설치
+new AwsEbsCsiDriverDeploy(spaceoneStack, 'AwsEbsCsiDriverDeploy', eksProp);
+
+new AwsLoadBalancerControllerDeploy(spaceoneStack, 'AwsLoadBalancerControllerDeploy', eksProp);
 
 const lookupZone = new LookupZone(spaceoneStack, 'SpaceoneHostedZone', 'aws.sonnada.me');
 
 const createCertificate = new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
 
-new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', {
-  env: primaryRegion,cluster: spaceoneStack.cluster
-}, lookupZone.domainProps);
+new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', eksProp, lookupZone.domainProps);
 
 new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', spaceoneStack.vpc);
+
+const createdUserSecret = new CreateAwsUser(spaceoneStack, 'CreateAwsUser', eksProp);
 
 // // SpaceONE 어플리케이션 구성 (Helm Chart)
 // new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', {

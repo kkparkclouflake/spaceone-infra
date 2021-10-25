@@ -9,7 +9,7 @@ export class SpaceoneStack extends cdk.Stack {
   public readonly cluster: eks.Cluster;
   public readonly vpc: ec2.Vpc;
 
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
     // SpaceONE VPC
