@@ -2,11 +2,12 @@ import * as cdk from '@aws-cdk/core';
 import * as iam from '@aws-cdk/aws-iam';
 
 import * as fs from 'fs';
+import { SecretProps } from '../props/secret-props';
 
 // import { DomainProps } from '../props/domain-props';
 
 export class CreateAwsUser extends cdk.Construct {
-    public readonly secretKey: object;
+    public readonly secretKey: SecretProps;
 
     constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
         super(scope, id);
@@ -20,8 +21,8 @@ export class CreateAwsUser extends cdk.Construct {
         let iamPolicyFile = fs.readFileSync('./res/iam/policies/spaceone-secret-service-user-iam-policy.json').toString();
 
         // Replace strings
-        iamPolicyFile = iamPolicyFile.replace('${var.region}', props.env?.region!);
-        iamPolicyFile = iamPolicyFile.replace('${data.aws_caller_identity.current.account_id}', props.env?.account!);
+        iamPolicyFile = iamPolicyFile.replace(new RegExp('\\${var.region}', 'gi'), props.env?.region!);
+        iamPolicyFile = iamPolicyFile.replace(new RegExp('\\${data.aws_caller_identity.current.account_id}', 'gi'), props.env?.account!);
         
         // Parse Policy
         let iamPolicyDocument = JSON.parse(iamPolicyFile);
@@ -48,8 +49,8 @@ export class CreateAwsUser extends cdk.Construct {
         });
 
         this.secretKey = {
-            'AccessKeyId': accessKey.ref,
-            'AccessKeySecret': accessKey.attrSecretAccessKey,
+            secretId: accessKey.ref,
+            secretPassword: accessKey.attrSecretAccessKey,
         };
     }
 }

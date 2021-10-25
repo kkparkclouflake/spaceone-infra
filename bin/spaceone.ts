@@ -12,6 +12,7 @@ import { DocumentDBCluster } from '../lib/constructs/documentdb-cluster';
 import { CreateAwsUser } from '../lib/constructs/create-aws-user';
 
 import { EksProps } from '../lib/props/eks-props'
+import { SpaceoneAppInitialize } from '../lib/constructs/spaceone-app-initialize';
 
 // const config = {
 //   env: {
@@ -42,18 +43,17 @@ new AwsLoadBalancerControllerDeploy(spaceoneStack, 'AwsLoadBalancerControllerDep
 
 const lookupZone = new LookupZone(spaceoneStack, 'SpaceoneHostedZone', 'aws.sonnada.me');
 
-const createCertificate = new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
+const createdCertificate = new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
 
 new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', eksProp, lookupZone.domainProps);
 
-new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', spaceoneStack.vpc);
+const createdDatabase = new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', spaceoneStack.vpc);
 
 const createdUserSecret = new CreateAwsUser(spaceoneStack, 'CreateAwsUser', eksProp);
 
-// // SpaceONE 어플리케이션 구성 (Helm Chart)
-// new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', {
-//   env: primaryRegion, cluster: spaceoneStack.cluster 
-// })
+// SpaceONE 어플리케이션 구성 (Helm Chart)
+new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', eksProp, lookupZone.domainProps, createdUserSecret.secretKey, createdDatabase.database);
+new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
 
 
 app.synth();

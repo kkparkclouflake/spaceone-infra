@@ -24,7 +24,7 @@ export class ExternalDnsDeploy extends cdk.Construct {
         try {
             let valuesYaml = fs.readFileSync('./res/kubernetes/manifests/external-dns.yaml');
             // Replace Domain and load YAML
-            let valuesParsed = yaml.loadAll(valuesYaml.toString().replace('{DOMAIN_FILTER}', domain.domainName));
+            let valuesParsed = yaml.loadAll(valuesYaml.toString().replace(new RegExp('{DOMAIN_FILTER}', 'gi'), domain.domainName));
             if (typeof valuesParsed === 'object' && valuesParsed !== null) {
                 dataResult = valuesParsed as Record<string, object>[];
             }
