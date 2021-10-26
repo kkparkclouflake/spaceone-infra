@@ -5,6 +5,8 @@ import * as yaml from 'js-yaml';
 
 import * as fs from 'fs';
 
+import * as lodash from 'lodash';
+
 import { EksProps } from '../props/eks-props'
 import { DomainProps } from '../props/domain-props';
 import { SecretProps } from '../props/secret-props';
@@ -15,16 +17,16 @@ export class SpaceoneAppDeploy extends cdk.Construct {
         super(scope, id);
 
         // Namespace 생성
-        eks.cluster.addManifest('root-supervisor', {
-            apiVersion: 'v1',
-            kind: 'Namespace',
-            metadata: { name: 'root-supervisor' }
-        });
-        eks.cluster.addManifest('spaceone', {
-            apiVersion: 'v1',
-            kind: 'Namespace',
-            metadata: { name: 'spaceone' }
-        });
+        // eks.cluster.addManifest('root-supervisor', {
+        //     apiVersion: 'v1',
+        //     kind: 'Namespace',
+        //     metadata: { name: 'root-supervisor' }
+        // });
+        // eks.cluster.addManifest('spaceone', {
+        //     apiVersion: 'v1',
+        //     kind: 'Namespace',
+        //     metadata: { name: 'spaceone' }
+        // });
 
         // SpaceONE Chart 에 사용할 values yaml 파일 로드
         let mergedValues = {};
@@ -74,7 +76,7 @@ export class SpaceoneAppDeploy extends cdk.Construct {
             values.forEach(function(data) {
                 let valuesParsed = yaml.load(data);
                 if (typeof valuesParsed === 'object' && valuesParsed !== null) {
-                    mergedValues = {...mergedValues, ...valuesParsed}
+                    mergedValues = lodash.merge(mergedValues, valuesParsed)
                 }
             });
             
