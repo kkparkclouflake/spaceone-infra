@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
+import * as lambda from '@aws-cdk/aws-lambda';
+import * as triggers from 'cdk-triggers';
+import * as ecr from '@aws-cdk/aws-ecr';
 import { SpaceoneStack } from '../lib/spaceone-stack';
 import { SpaceoneAppDeploy } from '../lib/constructs/spaceone-app-deploy';
 import { AwsEbsCsiDriverDeploy } from '../lib/constructs/aws-ebs-csi-driver-deploy';
@@ -13,6 +16,7 @@ import { CreateAwsUser } from '../lib/constructs/create-aws-user';
 
 import { EksProps } from '../lib/props/eks-props'
 import { SpaceoneAppInitialize } from '../lib/constructs/spaceone-app-initialize';
+import { Duration } from '@aws-cdk/core';
 
 // const config = {
 //   env: {
@@ -41,19 +45,21 @@ new AwsEbsCsiDriverDeploy(spaceoneStack, 'AwsEbsCsiDriverDeploy', eksProp);
 
 new AwsLoadBalancerControllerDeploy(spaceoneStack, 'AwsLoadBalancerControllerDeploy', eksProp);
 
+// HostedZone 을 찾아와서 인증서 생성 후 연동
 const lookupZone = new LookupZone(spaceoneStack, 'SpaceoneHostedZone', 'aws.sonnada.me');
 
-const createdCertificate = new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
+new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
 
 new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', eksProp, lookupZone.domainProps);
 
+// DB 생성
 const createdDatabase = new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', eksProp);
 
+// Secret Service 접근용 유저 생성
 const createdUserSecret = new CreateAwsUser(spaceoneStack, 'CreateAwsUser', eksProp);
 
 // SpaceONE 어플리케이션 구성 (Helm Chart)
-new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
 new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', eksProp, lookupZone.domainProps, createdUserSecret.secretKey, createdDatabase.database);
-
+new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
 
 app.synth();

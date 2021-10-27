@@ -13,17 +13,6 @@ export class SpaceoneAppInitialize extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, eks: EksProps) {
         super(scope, id);
 
-        eks.cluster.addManifest('root-supervisor', {
-            apiVersion: 'v1',
-            kind: 'Namespace',
-            metadata: { name: 'root-supervisor' }
-        });
-        eks.cluster.addManifest('spaceone', {
-            apiVersion: 'v1',
-            kind: 'Namespace',
-            metadata: { name: 'spaceone' }
-        });
-
         // Chart 에 사용할 values yaml 파일 로드
         let rootYaml: object | undefined;
         let userYaml: object | undefined;
