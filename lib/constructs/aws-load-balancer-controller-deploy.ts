@@ -7,6 +7,8 @@ import * as fs from 'fs';
 import { EksProps } from '../props/eks-props'
 
 export class AwsLoadBalancerControllerDeploy extends cdk.Construct {
+    public readonly body: cdk.Construct;
+
     constructor(scope: cdk.Construct, id: string, eks: EksProps) {
         super(scope, id);
 
@@ -29,7 +31,7 @@ export class AwsLoadBalancerControllerDeploy extends cdk.Construct {
         svcAccount.role.attachInlinePolicy(iamPolicy);
     
         // Install Load Balancer Controller
-        eks.cluster.addHelmChart('aws-load-balancer-controller', {
+        this.body = eks.cluster.addHelmChart('aws-load-balancer-controller', {
             release: 'aws-load-balancer-controller',
             repository: 'https://aws.github.io/eks-charts',
             chart: 'aws-load-balancer-controller',

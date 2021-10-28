@@ -36,6 +36,8 @@ let imagePaths = {
 }
 
 export class AwsEbsCsiDriverDeploy extends cdk.Construct {
+    public readonly body: cdk.Construct;
+
     constructor(scope: cdk.Construct, id: string, eks: EksProps) {
         super(scope, id);
 
@@ -67,7 +69,7 @@ export class AwsEbsCsiDriverDeploy extends cdk.Construct {
         svcAccount.role.attachInlinePolicy(iamPolicy);
 
         // Install EBS CSI Driver
-        eks.cluster.addHelmChart('aws-ebs-csi-driver', {
+        this.body = eks.cluster.addHelmChart('aws-ebs-csi-driver', {
             release: 'aws-ebs-csi-driver',
             repository: 'https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
             chart: 'aws-ebs-csi-driver',

@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
+
 import * as cdk from '@aws-cdk/core';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as triggers from 'cdk-triggers';
-import * as ecr from '@aws-cdk/aws-ecr';
+
 import { SpaceoneStack } from '../lib/spaceone-stack';
 import { SpaceoneAppDeploy } from '../lib/constructs/spaceone-app-deploy';
 import { AwsEbsCsiDriverDeploy } from '../lib/constructs/aws-ebs-csi-driver-deploy';
 import { AwsLoadBalancerControllerDeploy } from '../lib/constructs/aws-load-balancer-controller-deploy';
-import { LookupZone } from '../lib/constructs/lookup-zone';
+import { HostedZone } from '../lib/constructs/hosted-zone';
 import { CreateCertificate } from '../lib/constructs/create-certificate';
 import { ExternalDnsDeploy } from '../lib/constructs/external-dns-deploy';
 import { DocumentDBCluster } from '../lib/constructs/documentdb-cluster';
@@ -16,14 +15,6 @@ import { CreateAwsUser } from '../lib/constructs/create-aws-user';
 
 import { EksProps } from '../lib/props/eks-props'
 import { SpaceoneAppInitialize } from '../lib/constructs/spaceone-app-initialize';
-import { Duration } from '@aws-cdk/core';
-
-// const config = {
-//   env: {
-//     account: '139629787974',
-//     region: 'us-west-2'
-//   }
-// }
 
 const app = new cdk.App();
 
@@ -41,25 +32,29 @@ let eksProp: EksProps = {
 };
 
 // 각종 드라이버 설치
-new AwsEbsCsiDriverDeploy(spaceoneStack, 'AwsEbsCsiDriverDeploy', eksProp);
+const csiDriver = new AwsEbsCsiDriverDeploy(spaceoneStack, 'AwsEbsCsiDriverDeploy', eksProp);
 
-new AwsLoadBalancerControllerDeploy(spaceoneStack, 'AwsLoadBalancerControllerDeploy', eksProp);
+const lbController = new AwsLoadBalancerControllerDeploy(spaceoneStack, 'AwsLoadBalancerControllerDeploy', eksProp);
 
 // HostedZone 을 찾아와서 인증서 생성 후 연동
-const lookupZone = new LookupZone(spaceoneStack, 'SpaceoneHostedZone', 'aws.sonnada.me');
+const lookupZone = new HostedZone(spaceoneStack, 'SpaceoneHostedZone', 'aws.sonnada.me');
 
-new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
+const createCertificate = new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
 
-new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', eksProp, lookupZone.domainProps);
+const externalDns = new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', eksProp, lookupZone.domainProps);
 
 // DB 생성
-const createdDatabase = new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', eksProp);
+const createDatabase = new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', eksProp);
 
 // Secret Service 접근용 유저 생성
-const createdUserSecret = new CreateAwsUser(spaceoneStack, 'CreateAwsUser', eksProp);
+const createUserSecret = new CreateAwsUser(spaceoneStack, 'CreateAwsUser', eksProp);
 
 // SpaceONE 어플리케이션 구성 (Helm Chart)
-new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', eksProp, lookupZone.domainProps, createdUserSecret.secretKey, createdDatabase.database);
-new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
+const spaceone = new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', eksProp, lookupZone.domainProps, createUserSecret.secretKey, createDatabase.database);
+// spaceone.node.addDependency([csiDriver.body, lbController.body /*, externalDns */]);
+
+// SpaceONE 초기화 (Helm Chart)
+const initializer = new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
+// initializer.node.addDependency([spaceone.body, createDatabase.body]);
 
 app.synth();

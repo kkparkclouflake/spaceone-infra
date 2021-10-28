@@ -6,6 +6,7 @@ import { EksProps } from '../props/eks-props';
 
 export class DocumentDBCluster extends cdk.Construct {
     public readonly database: DatabaseProps;
+    public readonly body: cdk.Construct;
 
     constructor(scope: cdk.Construct, id: string, props: EksProps) {
         super(scope, id);
@@ -54,5 +55,7 @@ export class DocumentDBCluster extends cdk.Construct {
             username: masterUsername,
             password: masterPassword
         };
+
+        this.body = cluster
     }
 }

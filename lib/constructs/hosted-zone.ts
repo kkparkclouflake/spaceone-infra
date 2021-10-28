@@ -3,16 +3,26 @@ import * as route53 from '@aws-cdk/aws-route53';
 
 import { DomainProps } from '../props/domain-props';
 
-export class LookupZone extends cdk.Construct {
+export class HostedZone extends cdk.Construct {
     public readonly domainProps: DomainProps;
 
     constructor(scope: cdk.Construct, id: string, domainName: string) {
         super(scope, id);
         
         // Determine HostedZone
-        const hostedZone = route53.HostedZone.fromLookup(this, 'lookuped-zone', {
+        let hostedZone = route53.HostedZone.fromLookup(this, 'lookuped-zone', {
             domainName: domainName
         });
+
+        if (!hostedZone) {
+            hostedZone = new route53.PublicHostedZone(scope, 'created-zone', {
+                zoneName: domainName
+            });
+
+            const hostedZoneNameServer = new cdk.CfnOutput(this, "hostedZoneNameServer", {
+                value: hostedZone.hostedZoneNameServers?.join(', ')!,
+            });
+        }
 
         this.domainProps = {
             'domainName': domainName,

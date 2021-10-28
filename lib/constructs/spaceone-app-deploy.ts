@@ -13,6 +13,8 @@ import { SecretProps } from '../props/secret-props';
 import { DatabaseProps } from '../props/database-props';
 
 export class SpaceoneAppDeploy extends cdk.Construct {
+    public readonly body: cdk.Construct;
+
     constructor(scope: cdk.Construct, id: string, eks: EksProps, domain: DomainProps, secret: SecretProps, database: DatabaseProps) {
         super(scope, id);
 
@@ -88,14 +90,13 @@ export class SpaceoneAppDeploy extends cdk.Construct {
         }
 
         // Helm Chart 배포
-        eks.cluster.addHelmChart('spaceone', {
+        this.body = eks.cluster.addHelmChart('spaceone', {
             release: 'spaceone',
             repository: 'https://spaceone-dev.github.io/charts',
             chart: 'spaceone',
             namespace: 'spaceone',
             values: mergedValues,
         })
-
     }
 
 }
