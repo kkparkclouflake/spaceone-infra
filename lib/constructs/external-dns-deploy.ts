@@ -9,9 +9,9 @@ import * as fs from 'fs';
 import { EksProps } from '../props/eks-props'
 import { DomainProps } from '../props/domain-props';
 
-let domain = 'aws.sonnada.me'
-
 export class ExternalDnsDeploy extends cdk.Construct {
+    public readonly bodies: cdk.Construct[];
+
     constructor(scope: cdk.Construct, id: string, eks: EksProps, domain: DomainProps) {
         super(scope, id);
 
@@ -50,9 +50,13 @@ export class ExternalDnsDeploy extends cdk.Construct {
         // Attach IAM role
         svcAccount.role.attachInlinePolicy(iamPolicy);
 
+        let bodies: cdk.Construct[] = [];
+        
         // Install External DNS
         dataResult.forEach(function(val, idx) {
-            eks.cluster.addManifest('external-dns-' + idx, val);
+            bodies.push(eks.cluster.addManifest('external-dns-' + idx, val));
         });
+
+        this.bodies = bodies;
     }
 }

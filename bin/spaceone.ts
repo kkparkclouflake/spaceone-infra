@@ -31,6 +31,9 @@ let eksProp: EksProps = {
   env: primaryRegion, cluster: spaceoneStack.cluster
 };
 
+// DB 생성
+const createDatabase = new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', eksProp);
+
 // 각종 드라이버 설치
 const csiDriver = new AwsEbsCsiDriverDeploy(spaceoneStack, 'AwsEbsCsiDriverDeploy', eksProp);
 
@@ -42,19 +45,22 @@ const lookupZone = new HostedZone(spaceoneStack, 'SpaceoneHostedZone', 'aws.sonn
 const createCertificate = new CreateCertificate(spaceoneStack, 'CreateCertificate', lookupZone.domainProps);
 
 const externalDns = new ExternalDnsDeploy(spaceoneStack, 'ExternalDnsDeploy', eksProp, lookupZone.domainProps);
-
-// DB 생성
-const createDatabase = new DocumentDBCluster(spaceoneStack, 'DocumentDBCluster', eksProp);
+externalDns.node.addDependency(createCertificate);
 
 // Secret Service 접근용 유저 생성
 const createUserSecret = new CreateAwsUser(spaceoneStack, 'CreateAwsUser', eksProp);
 
 // SpaceONE 어플리케이션 구성 (Helm Chart)
 const spaceone = new SpaceoneAppDeploy(spaceoneStack, 'SpaceoneAppDeploy', eksProp, lookupZone.domainProps, createUserSecret.secretKey, createDatabase.database);
-// spaceone.node.addDependency([csiDriver.body, lbController.body /*, externalDns */]);
+spaceone.node.addDependency(createDatabase);
+spaceone.node.addDependency(csiDriver);
+spaceone.node.addDependency(lbController);
+spaceone.node.addDependency(externalDns);
 
 // SpaceONE 초기화 (Helm Chart)
 const initializer = new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
-// initializer.node.addDependency([spaceone.body, createDatabase.body]);
+initializer.node.addDependency(spaceone);
+
+// TODO: Dependency 셋업
 
 app.synth();

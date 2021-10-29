@@ -10,19 +10,23 @@ export class HostedZone extends cdk.Construct {
         super(scope, id);
         
         // Determine HostedZone
+        // 현재는 Lookup 실패시 그대로 작업 종료됨
         let hostedZone = route53.HostedZone.fromLookup(this, 'lookuped-zone', {
             domainName: domainName
         });
 
-        if (!hostedZone) {
-            hostedZone = new route53.PublicHostedZone(scope, 'created-zone', {
-                zoneName: domainName
-            });
+        // console.log(hostedZone);
 
-            const hostedZoneNameServer = new cdk.CfnOutput(this, "hostedZoneNameServer", {
-                value: hostedZone.hostedZoneNameServers?.join(', ')!,
-            });
-        }
+        // Lookup 실패시 에러를 잡아서 Domain 생성토록?
+        // if (!hostedZone) {
+        //     hostedZone = new route53.PublicHostedZone(scope, 'created-zone', {
+        //         zoneName: domainName
+        //     });
+
+        //     const hostedZoneNameServer = new cdk.CfnOutput(this, "hostedZoneNameServer", {
+        //         value: hostedZone.hostedZoneNameServers?.join(', ')!,
+        //     });
+        // }
 
         this.domainProps = {
             'domainName': domainName,
