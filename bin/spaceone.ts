@@ -61,6 +61,4 @@ spaceone.node.addDependency(externalDns);
 const initializer = new SpaceoneAppInitialize(spaceoneStack, 'SpaceoneAppInitialize', eksProp);
 initializer.node.addDependency(spaceone);
 
-// TODO: Dependency 셋업
-
 app.synth();
