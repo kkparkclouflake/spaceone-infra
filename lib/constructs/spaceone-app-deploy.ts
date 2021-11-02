@@ -8,23 +8,20 @@ import * as fs from 'fs';
 import * as lodash from 'lodash';
 
 import { EksProps } from '../props/eks-props'
-import { DomainProps } from '../props/domain-props';
-import { SecretProps } from '../props/secret-props';
-import { DatabaseProps } from '../props/database-props';
 
 export class SpaceoneAppDeploy extends cdk.Construct {
     public readonly body: cdk.Construct;
 
-    constructor(scope: cdk.Construct, id: string, eks: EksProps, domain: DomainProps, secret: SecretProps, database: DatabaseProps) {
+    constructor(scope: cdk.Construct, id: string, props: EksProps) {
         super(scope, id);
 
         // Namespace 생성
-        eks.cluster.addManifest('root-supervisor', {
+        props.cluster!.addManifest('root-supervisor', {
             apiVersion: 'v1',
             kind: 'Namespace',
             metadata: { name: 'root-supervisor' }
         });
-        eks.cluster.addManifest('spaceone', {
+        props.cluster!.addManifest('spaceone', {
             apiVersion: 'v1',
             kind: 'Namespace',
             metadata: { name: 'spaceone' }
@@ -37,26 +34,26 @@ export class SpaceoneAppDeploy extends cdk.Construct {
             // Build Replace Map
             let valuesFiles: {[key: string]: {[key: string]: string}} = {
                 './res/configs/spaceone/values.yaml': {
-                    '${aws_access_key_id}': secret.secretId,
-                    '${aws_secret_access_key}': secret.secretPassword,
-                    '${region_name}': eks.env?.region!,
-                    '${monitoring_domain}': 'monitoring.' + domain.domainName,
-                    '${monitoring_webhook_domain}': 'monitoring-webhook.' + domain.domainName,
-                    '${certificate-arn}': domain.certificate?.certificateArn!,
+                    '${aws_access_key_id}': props.createdUser!.secretId,
+                    '${aws_secret_access_key}': props.createdUser!.secretKey,
+                    '${region_name}': props.env?.region!,
+                    '${monitoring_domain}': 'monitoring.' + props.createdDomain!.domainName,
+                    '${monitoring_webhook_domain}': 'monitoring-webhook.' + props.createdDomain!.domainName,
+                    '${certificate-arn}': props.createdDomain!.certificate!.certificateArn!,
                     '${smtp_host}': '',
                     '${smtp_port}': '',
                     '${smtp_user}': '',
                     '${smtp_password}': '',
                 },
                 './res/configs/spaceone/database.yaml': {
-                    '${database_user_name}': database.username,
-                    '${database_user_password}': database.password,
-                    '${endpoint}': database.endpoint,
+                    '${database_user_name}': props.createdDocdb!.username,
+                    '${database_user_password}': props.createdDocdb!.password,
+                    '${endpoint}': props.createdDocdb!.database.clusterEndpoint.hostname,
                 },
                 './res/configs/spaceone/frontend.yaml': {
-                    '${console-api-domain}': 'console-api.' + domain.domainName,
-                    '${console-domain}': '*.console.' + domain.domainName,
-                    '${certificate-arn}': domain.certificate?.certificateArn!,
+                    '${console-api-domain}': 'console-api.' + props.createdDomain!.domainName,
+                    '${console-domain}': '*.console.' + props.createdDomain!.domainName,
+                    '${certificate-arn}': props.createdDomain!.certificate!.certificateArn!,
                 },
             }
 
@@ -90,7 +87,7 @@ export class SpaceoneAppDeploy extends cdk.Construct {
         }
 
         // Helm Chart 배포
-        this.body = eks.cluster.addHelmChart('spaceone', {
+        this.body = props.cluster!.addHelmChart('spaceone', {
             release: 'spaceone',
             repository: 'https://spaceone-dev.github.io/charts',
             chart: 'spaceone',

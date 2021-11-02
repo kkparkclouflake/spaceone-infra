@@ -1,12 +1,12 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as docdb from '@aws-cdk/aws-docdb';
-import { DatabaseProps } from '../props/database-props';
 import { EksProps } from '../props/eks-props';
 
 export class DocumentDBCluster extends cdk.Construct {
-    public readonly database: DatabaseProps;
-    public readonly body: cdk.Construct;
+    public readonly database: docdb.DatabaseCluster;
+    public readonly username: string;
+    public readonly password: string;
 
     constructor(scope: cdk.Construct, id: string, props: EksProps) {
         super(scope, id);
@@ -41,21 +41,15 @@ export class DocumentDBCluster extends cdk.Construct {
             parameterGroup: parameterGroup,
             engineVersion: '4.0.0',
             storageEncrypted: false,
-            vpc: props.cluster.vpc,
+            vpc: props.cluster!.vpc,
             removalPolicy: cdk.RemovalPolicy.DESTROY
         });
 
         const docdbSg = ec2.SecurityGroup.fromSecurityGroupId(scope, 'docdb-sg', cluster.securityGroupId);
-        docdbSg.addIngressRule(props.cluster.clusterSecurityGroup, ec2.Port.tcp(27017), 'EKS to DocumentDB Ingress Rule');
+        docdbSg.addIngressRule(props.cluster!.clusterSecurityGroup, ec2.Port.tcp(27017), 'EKS to DocumentDB Ingress Rule');
 
-        // TODO: EKS to DB Inbound SecurityGroup
-
-        this.database = {
-            endpoint: cluster.clusterEndpoint.hostname,
-            username: masterUsername,
-            password: masterPassword
-        };
-
-        this.body = cluster
+        this.database = cluster
+        this.username = masterUsername
+        this.password = masterPassword
     }
 }

@@ -12,10 +12,10 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
-    "@types/js-yaml": "^4.0.3",
+    "@types/js-yaml": "^4.0.4",
     "@types/lodash": "^4.14.176",
-    "@types/node": "^10.17.27",
-    "aws-cdk": "^1.129.0",
+    "@types/node": "^10.17.60",
+    "aws-cdk": "^1.130.0",
     "jest": "^26.4.2",
     "lodash": "^4.17.21",
     "ts-jest": "^26.2.0",
@@ -23,10 +23,10 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "@aws-cdk/assert": "^1.129.0",
-    "@aws-cdk/core": "^1.129.0",
-    "@aws-cdk/aws-eks": "^1.129.0",
-    "@aws-cdk/aws-docdb": "^1.129.0",
+    "@aws-cdk/assert": "^1.130.0",
+    "@aws-cdk/aws-docdb": "^1.130.0",
+    "@aws-cdk/aws-eks": "^1.130.0",
+    "@aws-cdk/core": "^1.130.0",
     "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.16"
   }

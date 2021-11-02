@@ -36,7 +36,7 @@ export class ExternalDnsDeploy extends cdk.Construct {
         }
 
         // Create Kubernetes ServiceAccount
-        let svcAccount = eks.cluster.addServiceAccount('external-dns', {
+        let svcAccount = eks.cluster!.addServiceAccount('external-dns', {
             name: 'external-dns',
             namespace: 'kube-system',
         });
@@ -54,7 +54,7 @@ export class ExternalDnsDeploy extends cdk.Construct {
         
         // Install External DNS
         dataResult.forEach(function(val, idx) {
-            bodies.push(eks.cluster.addManifest('external-dns-' + idx, val));
+            bodies.push(eks.cluster!.addManifest('external-dns-' + idx, val));
         });
 
         this.bodies = bodies;

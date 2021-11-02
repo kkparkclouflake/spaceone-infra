@@ -3,7 +3,7 @@ import * as acm from '@aws-cdk/aws-certificatemanager';
 
 import { DomainProps } from '../props/domain-props';
 
-export class CreateCertificate extends cdk.Construct {
+export class Certificate extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, props: DomainProps) {
         super(scope, id);
 
