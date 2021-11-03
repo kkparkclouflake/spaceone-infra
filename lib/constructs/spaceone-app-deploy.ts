@@ -16,12 +16,12 @@ export class SpaceoneAppDeploy extends cdk.Construct {
         super(scope, id);
 
         // Namespace 생성
-        props.cluster!.addManifest('root-supervisor', {
+        props.cluster.addManifest('root-supervisor', {
             apiVersion: 'v1',
             kind: 'Namespace',
             metadata: { name: 'root-supervisor' }
         });
-        props.cluster!.addManifest('spaceone', {
+        props.cluster.addManifest('spaceone', {
             apiVersion: 'v1',
             kind: 'Namespace',
             metadata: { name: 'spaceone' }
@@ -87,7 +87,7 @@ export class SpaceoneAppDeploy extends cdk.Construct {
         }
 
         // Helm Chart 배포
-        this.body = props.cluster!.addHelmChart('spaceone', {
+        this.body = props.cluster.addHelmChart('spaceone', {
             release: 'spaceone',
             repository: 'https://spaceone-dev.github.io/charts',
             chart: 'spaceone',

@@ -1,5 +1,4 @@
 import * as cdk from '@aws-cdk/core';
-import * as eks from '@aws-cdk/aws-eks';
 import * as iam from '@aws-cdk/aws-iam'
 
 import * as fs from 'fs';
@@ -16,7 +15,7 @@ export class AwsLoadBalancerControllerDeploy extends cdk.Construct {
         let iamPolicyDocument = JSON.parse(fs.readFileSync('./res/iam/policies/aws-lb-controller-v2.3.0-iam-policy.json').toString());
 
         // Create Kubernetes ServiceAccount
-        let svcAccount = eks.cluster!.addServiceAccount('aws-load-balancer-controller', {
+        let svcAccount = eks.cluster.addServiceAccount('aws-load-balancer-controller', {
             name: 'aws-load-balancer-controller',
             namespace: 'kube-system',
         });
@@ -31,13 +30,13 @@ export class AwsLoadBalancerControllerDeploy extends cdk.Construct {
         svcAccount.role.attachInlinePolicy(iamPolicy);
     
         // Install Load Balancer Controller
-        this.body = eks.cluster!.addHelmChart('aws-load-balancer-controller', {
+        this.body = eks.cluster.addHelmChart('aws-load-balancer-controller', {
             release: 'aws-load-balancer-controller',
             repository: 'https://aws.github.io/eks-charts',
             chart: 'aws-load-balancer-controller',
             namespace: 'kube-system',
             values: {
-                'clusterName': eks.cluster!.clusterName,
+                'clusterName': eks.cluster.clusterName,
                 'serviceAccount': {
                     'create': false,
                     'name': 'aws-load-balancer-controller',

@@ -41,12 +41,12 @@ export class DocumentDBCluster extends cdk.Construct {
             parameterGroup: parameterGroup,
             engineVersion: '4.0.0',
             storageEncrypted: false,
-            vpc: props.cluster!.vpc,
+            vpc: props.cluster.vpc,
             removalPolicy: cdk.RemovalPolicy.DESTROY
         });
 
         const docdbSg = ec2.SecurityGroup.fromSecurityGroupId(scope, 'docdb-sg', cluster.securityGroupId);
-        docdbSg.addIngressRule(props.cluster!.clusterSecurityGroup, ec2.Port.tcp(27017), 'EKS to DocumentDB Ingress Rule');
+        docdbSg.addIngressRule(props.cluster.clusterSecurityGroup, ec2.Port.tcp(27017), 'EKS to DocumentDB Ingress Rule');
 
         this.database = cluster
         this.username = masterUsername

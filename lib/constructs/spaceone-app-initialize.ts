@@ -48,7 +48,7 @@ export class SpaceoneAppInitialize extends cdk.Construct {
         }
 
         // Helm Chart 배포
-        this.body = eks.cluster!.addHelmChart('spaceone-initializer', {
+        this.body = eks.cluster.addHelmChart('spaceone-initializer', {
             release: 'spaceone-initializer',
             repository: 'https://raw.githubusercontent.com/kkparkclouflake/spaceone-initializer/master/repo',
             chart: 'spaceone-initializer',
