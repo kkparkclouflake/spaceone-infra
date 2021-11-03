@@ -2,7 +2,7 @@ enabled: true
 
 # Service
 mongodb:
-    enabled: true
+    enabled: false
 redis:
     enabled: true
 consul:
