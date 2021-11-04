@@ -7,6 +7,7 @@ export class Certificate extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, props: DomainProps) {
         super(scope, id);
 
+        // 인증서 생성
         let consoleCert = new acm.Certificate(this, 'Certificate', {
             domainName: '*.' + props.domainName,
             subjectAlternativeNames: [
