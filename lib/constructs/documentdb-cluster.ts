@@ -45,9 +45,11 @@ export class DocumentDBCluster extends cdk.Construct {
             removalPolicy: cdk.RemovalPolicy.DESTROY
         });
 
+        // EKS 와 DocumentDB 간에 SecurityGroup Open
         const docdbSg = ec2.SecurityGroup.fromSecurityGroupId(scope, 'docdb-sg', cluster.securityGroupId);
         docdbSg.addIngressRule(props.cluster.clusterSecurityGroup, ec2.Port.tcp(27017), 'EKS to DocumentDB Ingress Rule');
 
+        // 외부에서 가져갈수 있도록 데이터를 뽑아놓는다
         this.database = cluster
         this.username = masterUsername
         this.password = masterPassword

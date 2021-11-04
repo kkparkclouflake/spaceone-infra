@@ -30,8 +30,8 @@ export class Vpc extends cdk.Construct {
             cidrMask: 24
           }
         ]
-      });
-
+      }
+    );
     this.vpc = vpc;
   }
 }

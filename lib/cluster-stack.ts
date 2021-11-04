@@ -18,10 +18,13 @@ export class ClusterStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
+    // VPC 생성
     let vpc = new Vpc(this, 'SpaceoneVpc', props);
 
+    // EKS 생성
     let eks = new Eks(this, 'SpaceoneEksCluster', props, vpc.vpc, ['mzc_user04', 'mzc_user05']);
 
+    // VPC 와 EKS 를 담은 Prop Object 생성
     this.eksProps = {
       env: props.env,
       vpc: vpc.vpc,
@@ -41,6 +44,7 @@ export class ClusterStack extends cdk.Stack {
 
     const createCertificate = new Certificate(this, 'CreateCertificate', lookupZone.domainProps);
 
+    // ExternalDriver 설치 시 인증서 생성 후 동작토록 Dependency 적용
     const externalDns = new ExternalDnsDeploy(this, 'ExternalDnsDeploy', this.eksProps, lookupZone.domainProps);
     externalDns.node.addDependency(createCertificate);
 

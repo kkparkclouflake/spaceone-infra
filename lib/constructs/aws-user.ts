@@ -12,6 +12,7 @@ export class AwsUser extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
         super(scope, id);
 
+        // SpaceONE 에서 사용할 Secret Service 접근용 Aws User 생성
         let secretServiceUser = new iam.User(scope, 'spaceone-user', {
             userName: 'spaceone.secret-service',
             path: '/',
@@ -40,6 +41,7 @@ export class AwsUser extends cdk.Construct {
             userName: secretServiceUser.userName
         })
         
+        // 해당 값을 Output 으로 설정 (사용자에게 표시되도록)
         const accessKeyId = new cdk.CfnOutput(this, "AccessKeyId", {
             value: accessKey.ref,
         });
